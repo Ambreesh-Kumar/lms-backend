@@ -7,7 +7,7 @@ export const uploadToCloudinary = (buffer, folder = "profiles") => {
         folder,
         resource_type: "image",
       },
-      (result, error) => {
+      (error, result) => {
         if (error) return reject(error);
         resolve(result);
       }
