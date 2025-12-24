@@ -2,6 +2,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
+import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
 
@@ -10,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Cookies
-app.use(cookieParser())
+app.use(cookieParser());
 
 // CORS
 // If you keep frontend on different origin, set credentials and origin properly.
@@ -21,6 +23,10 @@ app.use(
   })
 );
 // routes
-app.use("/api/auth/", authRoutes)
+app.use("/api/auth/", authRoutes);
+app.use("/api/v1/courses", courseRoutes);
+
+// global error handler at last after all routes
+app.use(errorHandler);
 
 export default app;
