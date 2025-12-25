@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import { Course } from "../models/Course.js";
 import { Section } from "../models/Section.js";
 import { Lesson } from "../models/Lesson.js";
+import { Enrollment } from "../models/Enrollment.js";
 import { uploadToCloudinary } from "../utils/cloudinaryUpload.js";
 import deleteFromCloudinary from "../utils/cloudinaryDelete.js";
 import mongoose from "mongoose";
@@ -344,3 +345,54 @@ export const getSingleCourse = asyncHandler(async (req, res) => {
 });
 
 
+export const deleteCourse = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+
+  // Validate course id
+  if (!mongoose.Types.ObjectId.isValid(courseId)) {
+    throw new ApiError(400, "Invalid course id");
+  }
+
+  const course = await Course.findById(courseId);
+
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // Ownership check
+  if (course.instructor.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "You are not allowed to delete this course");
+  }
+
+  // Prevent deleting published courses
+  if (course.status === "published") {
+    throw new ApiError(
+      400,
+      "Published courses cannot be deleted. Unpublish first."
+    );
+  }
+
+  // Check for enrollments
+  const enrollmentCount = await Enrollment.countDocuments({
+    course: courseId,
+  });
+
+  if (enrollmentCount > 0) {
+    throw new ApiError(
+      400,
+      "Course with enrollments cannot be deleted"
+    );
+  }
+
+  // Delete thumbnail from Cloudinary
+  if (course.thumbnailPublicId) {
+    await deleteFromCloudinary(course.thumbnailPublicId);
+  }
+
+  await course.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "Course deleted successfully",
+  });
+});

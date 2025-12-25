@@ -9,27 +9,41 @@ import {
   updateCourseStatus,
   listInstructorCourses,
   listPublishedCourses,
-  getSingleCourse 
+  getSingleCourse,
+  deleteCourse
 } from "../controllers/courseController.js";
 
 const router = express.Router();
 
-// public routes
+/**
+ * PUBLIC ROUTES (NO AUTH REQUIRED)
+ */
 router.get("/published", listPublishedCourses);
 
-router.get("/:courseId", authOptional, getSingleCourse);
-
-// routes require login
+/**
+ * AUTHENTICATED ROUTES
+ */
 router.use(auth);
 
+// instructor-specific routes
+router.get("/instructor", requireInstructor, listInstructorCourses);
+
 router.post("/", upload.single("thumbnail"), requireInstructor, createCourse);
+
 router.put(
   "/:courseId",
   upload.single("thumbnail"),
   requireInstructor,
   updateCourse
 );
+
 router.patch("/:courseId/status", requireInstructor, updateCourseStatus);
-router.get("/instructor", requireInstructor, listInstructorCourses);
+
+router.delete("/:courseId", requireInstructor, deleteCourse);
+
+/**
+ * PUBLIC / OPTIONAL AUTH ROUTE (MUST BE LAST)
+ */
+router.get("/:courseId", authOptional, getSingleCourse);
 
 export default router;
