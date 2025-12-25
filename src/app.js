@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import sectionRoutes from "./routes/sectionRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(
 // routes
 app.use("/api/auth/", authRoutes);
 app.use("/api/v1/courses", courseRoutes);
+app.use("/api/sections", sectionRoutes);
 
 // global error handler at last after all routes
 app.use(errorHandler);
