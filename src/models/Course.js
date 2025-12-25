@@ -16,7 +16,8 @@ const courseSchema = new mongoose.Schema(
       default: "Beginner",
     },
     price: { type: Number, required: true, min: 0 },
-    thumbnail: { type: String }, // image URL
+    thumbnail: { type: String },
+    thumbnailPublicId: { type: String },
     status: {
       type: String,
       enum: ["draft", "published", "unpublished"],
