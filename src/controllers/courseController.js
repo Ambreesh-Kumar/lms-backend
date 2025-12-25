@@ -236,7 +236,7 @@ export const listInstructorCourses = asyncHandler(async (req, res) => {
 
   // Optional filters
   if (category) filter.category = category;
-  if (search) filter.title = { $regex: search, $options: "i" };
+  if (search) filter.title = { $regex: search.trim(), $options: "i" };
 
   const [total, courses] = await Promise.all([
     Course.countDocuments(filter),
@@ -258,3 +258,49 @@ export const listInstructorCourses = asyncHandler(async (req, res) => {
     },
   });
 });
+
+export const listPublishedCourses = asyncHandler(async (req, res) => {
+  let { category, search, type, page = 1, limit = 10 } = req.query;
+
+  // Sanitize & validate query params
+  page = parseInt(page) > 0 ? parseInt(page) : 1;
+  limit = parseInt(limit) > 0 ? Math.min(parseInt(limit), 50) : 10;
+
+  const filter = { status: "published" }; // Only published courses
+
+  if (category) filter.category = category.trim();
+
+  if (search) {
+    filter.title = { $regex: search.trim(), $options: "i" };
+  }
+
+  if (type === "free") filter.price = 0;
+  if (type === "paid") filter.price = { $gt: 0 };
+
+  // Execute queries in parallel for efficiency
+  const [total, courses] = await Promise.all([
+    Course.countDocuments(filter),
+    Course.find(filter)
+      .sort({ createdAt: -1 }) // latest first
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("title category price level thumbnail instructor createdAt") // select only necessary fields
+      .populate({
+        path: "instructor",
+        select: "name avatar",
+      })
+      .lean(),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: courses,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});
+

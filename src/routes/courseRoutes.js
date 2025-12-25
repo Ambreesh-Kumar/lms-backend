@@ -2,11 +2,20 @@ import express from "express";
 import { auth } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
 import { requireInstructor } from "../middlewares/requireInstructor.js";
-import { createCourse, updateCourse, updateCourseStatus, listInstructorCourses  } from "../controllers/courseController.js";
+import {
+  createCourse,
+  updateCourse,
+  updateCourseStatus,
+  listInstructorCourses,
+  listPublishedCourses,
+} from "../controllers/courseController.js";
 
 const router = express.Router();
 
-// all routes require login
+// public routes
+router.get("/published", listPublishedCourses);
+
+// routes require login
 router.use(auth);
 
 router.post("/", upload.single("thumbnail"), requireInstructor, createCourse);
