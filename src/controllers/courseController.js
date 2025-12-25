@@ -304,3 +304,43 @@ export const listPublishedCourses = asyncHandler(async (req, res) => {
   });
 });
 
+export const getSingleCourse = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const user = req.user; // undefined if public route
+
+  if (!mongoose.Types.ObjectId.isValid(courseId)) {
+    throw new ApiError(400, "Invalid course id");
+  }
+
+  const course = await Course.findById(courseId)
+    .select(
+      "title description category price level thumbnail status instructor createdAt"
+    )
+    .populate("instructor", "name avatar")
+    .lean();
+
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // Access control for non-published courses
+  if (course.status !== "published") {
+    if (!user) {
+      throw new ApiError(403, "You are not allowed to access this course");
+    }
+
+    const isAdmin = user.role === "admin";
+    const isOwner = course.instructor._id.equals(user._id);
+
+    if (!isAdmin && !isOwner) {
+      throw new ApiError(403, "You are not allowed to access this course");
+    }
+  }
+
+  res.status(200).json({
+    success: true,
+    data: course,
+  });
+});
+
+
