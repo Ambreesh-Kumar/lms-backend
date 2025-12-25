@@ -186,7 +186,7 @@ export const updateCourseStatus = asyncHandler(async (req, res) => {
     const sectionIds = await Section.find({ course: courseId }).distinct("_id"); // distinct give array of provided field e.g _id only
     const sectionCount = await Section.countDocuments({ course: courseId });
     const lessonCount = await Lesson.countDocuments({
-      section: { $in: sectionIds},
+      section: { $in: sectionIds },
     });
 
     if (sectionCount === 0 || lessonCount === 0) {
@@ -215,6 +215,46 @@ export const updateCourseStatus = asyncHandler(async (req, res) => {
     data: {
       courseId: course._id,
       status: course.status,
+    },
+  });
+});
+
+export const listInstructorCourses = asyncHandler(async (req, res) => {
+  let { status, category, search, page = 1, limit = 10 } = req.query;
+
+  // Validate and sanitize query params
+  page = parseInt(page) > 0 ? parseInt(page) : 1;
+  limit = parseInt(limit) > 0 ? Math.min(parseInt(limit), 50) : 10; // max 50 per page
+
+  const filter = { instructor: req.user._id };
+
+  // Validate status filter
+  const validStatuses = ["draft", "published", "unpublished"];
+  if (status && validStatuses.includes(status)) {
+    filter.status = status;
+  }
+
+  // Optional filters
+  if (category) filter.category = category;
+  if (search) filter.title = { $regex: search, $options: "i" };
+
+  const [total, courses] = await Promise.all([
+    Course.countDocuments(filter),
+    Course.find(filter)
+      .sort({ createdAt: -1 }) // latest first
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: courses,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     },
   });
 });
