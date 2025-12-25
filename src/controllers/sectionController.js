@@ -166,3 +166,42 @@ export const updateSection = asyncHandler(async (req, res) => {
   });
 });
 
+export const deleteSection = asyncHandler(async (req, res) => {
+  const { sectionId } = req.params;
+
+  // Validate sectionId
+  if (!mongoose.Types.ObjectId.isValid(sectionId)) {
+    throw new ApiError(400, "Invalid section id");
+  }
+
+  const section = await Section.findById(sectionId);
+  if (!section) {
+    throw new ApiError(404, "Section not found");
+  }
+
+  // Fetch course for ownership validation
+  const course = await Course.findById(section.course);
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  if (course.instructor.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "You are not allowed to delete this section");
+  }
+
+  // OPTIONAL (Implement later):
+  // Prevent deletion if lessons exist under this section
+  // const lessonsCount = await Lesson.countDocuments({ section: section._id });
+  // if (lessonsCount > 0) {
+  //   throw new ApiError(400, "Delete lessons before deleting section");
+  // }
+
+  await section.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "Section deleted successfully",
+  });
+});
+
+
