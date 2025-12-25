@@ -96,3 +96,73 @@ export const listSections = asyncHandler(async (req, res) => {
     data: sectionsWithLessonCount,
   });
 });
+
+export const updateSection = asyncHandler(async (req, res) => {
+  const { sectionId } = req.params;
+  const { title, order } = req.body;
+
+  if (title === undefined && order === undefined) {
+    throw new ApiError(400, "No data provided to update");
+  }
+
+  // Validate sectionId
+  if (!mongoose.Types.ObjectId.isValid(sectionId)) {
+    throw new ApiError(400, "Invalid section id");
+  }
+
+  const section = await Section.findById(sectionId);
+  if (!section) {
+    throw new ApiError(404, "Section not found");
+  }
+
+  // Fetch course for ownership check
+  const course = await Course.findById(section.course);
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  if (course.instructor.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "You are not allowed to update this section");
+  }
+
+  // Update title
+  if (title !== undefined) {
+    if (typeof title !== "string" || title.trim() === "") {
+      throw new ApiError(400, "Section title cannot be empty");
+    }
+    section.title = title.trim();
+  }
+
+  // Update order (NO SHIFTING)
+  if (order !== undefined) {
+    if (!Number.isInteger(order) || order < 1) {
+      throw new ApiError(400, "Order must be a positive integer");
+    }
+
+    if (order !== section.order) {
+      const orderExists = await Section.findOne({
+        course: section.course,
+        order,
+        _id: { $ne: section._id },
+      });
+
+      if (orderExists) {
+        throw new ApiError(
+          409,
+          "Section with this order already exists"
+        );
+      }
+
+      section.order = order;
+    }
+  }
+
+  await section.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Section updated successfully",
+    data: section,
+  });
+});
+

@@ -5,6 +5,7 @@ import { requireInstructor } from "../middlewares/requireInstructor.js";
 import {
   createSection,
   listSections,
+  updateSection 
 } from "../controllers/sectionController.js";
 
 const router = express.Router();
@@ -17,6 +18,7 @@ router.use(auth);
 
 // Instructor-only
 router.post("/", requireInstructor, createSection);
+router.put("/:sectionId", requireInstructor, updateSection);
 
 
 export default router;
