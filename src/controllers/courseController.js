@@ -1,6 +1,8 @@
 import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { Course } from "../models/Course.js";
+import { Section } from "../models/Section.js";
+import { Lesson } from "../models/Lesson.js";
 import { uploadToCloudinary } from "../utils/cloudinaryUpload.js";
 import deleteFromCloudinary from "../utils/cloudinaryDelete.js";
 import mongoose from "mongoose";
@@ -153,5 +155,66 @@ export const updateCourse = asyncHandler(async (req, res) => {
     success: true,
     message: "Course updated successfully",
     data: course,
+  });
+});
+
+export const updateCourseStatus = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const { status } = req.body;
+
+  if (!["published", "unpublished"].includes(status)) {
+    throw new ApiError(400, "Invalid course status");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(courseId)) {
+    throw new ApiError(400, "Invalid course id");
+  }
+
+  const course = await Course.findById(courseId);
+
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // Ownership check
+  if (course.instructor.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "You are not allowed to change this course status");
+  }
+
+  // Publish rules
+  if (status === "published") {
+    const sectionIds = await Section.find({ course: courseId }).distinct("_id"); // distinct give array of provided field e.g _id only
+    const sectionCount = await Section.countDocuments({ course: courseId });
+    const lessonCount = await Lesson.countDocuments({
+      section: { $in: sectionIds},
+    });
+
+    if (sectionCount === 0 || lessonCount === 0) {
+      throw new ApiError(
+        400,
+        "Course must have at least one section and one lesson before publishing"
+      );
+    }
+
+    course.status = "published";
+  }
+
+  // Unpublish rules
+  if (status === "unpublished") {
+    if (course.status !== "published") {
+      throw new ApiError(400, "Only published courses can be unpublished");
+    }
+    course.status = "unpublished";
+  }
+
+  await course.save();
+
+  res.status(200).json({
+    success: true,
+    message: `Course ${status} successfully`,
+    data: {
+      courseId: course._id,
+      status: course.status,
+    },
   });
 });
