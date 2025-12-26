@@ -14,6 +14,8 @@ export const createLesson = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All required fields must be provided");
   }
 
+  const parsedOrder = Number(order);
+
   if (!mongoose.Types.ObjectId.isValid(section)) {
     throw new ApiError(400, "Invalid section id");
   }
@@ -26,7 +28,7 @@ export const createLesson = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Lesson content cannot be empty");
   }
 
-  if (!Number.isInteger(order) || order < 1) {
+  if (!Number.isInteger(parsedOrder) || parsedOrder < 1) {
     throw new ApiError(400, "Order must be a positive integer");
   }
 
@@ -61,7 +63,7 @@ export const createLesson = asyncHandler(async (req, res) => {
   }
 
   // Prevent order conflict
-  const existingLesson = await Lesson.findOne({ section, order });
+  const existingLesson = await Lesson.findOne({ section, order: parsedOrder });
   if (existingLesson) {
     throw new ApiError(
       409,
@@ -74,7 +76,7 @@ export const createLesson = asyncHandler(async (req, res) => {
     title: title.trim(),
     type,
     content,
-    order,
+    order: parsedOrder,
     duration: type === "video" ? duration : undefined,
   });
 
