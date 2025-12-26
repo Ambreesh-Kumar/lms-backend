@@ -1,7 +1,11 @@
 import express from "express";
 import { auth } from "../middlewares/auth.js";
+import { authOptional } from "../middlewares/authOptional.js";
 import { requireInstructor } from "../middlewares/requireInstructor.js";
-import { createLesson } from "../controllers/lessonController.js";
+import {
+  createLesson,
+  listLessonsBySection,
+} from "../controllers/lessonController.js";
 
 const router = express.Router();
 
@@ -10,5 +14,7 @@ router.use(auth);
 
 // Instructor-only
 router.post("/", requireInstructor, createLesson);
+// Instructor and enrolled student
+router.get("/section/:sectionId", listLessonsBySection);
 
 export default router;
