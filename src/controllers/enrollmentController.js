@@ -55,3 +55,32 @@ export const createEnrollment = asyncHandler(async (req, res) => {
     data: enrollment,
   });
 });
+
+export const listMyEnrollments = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  // Only students can view their enrollments
+  if (user.role !== "student") {
+    throw new ApiError(403, "Only students can view enrollments");
+  }
+
+  const enrollments = await Enrollment.find({
+    student: user._id,
+    status: { $ne: "cancelled" },
+  })
+    .populate({
+      path: "course",
+      select: "title thumbnail price level status instructor",
+      populate: {
+        path: "instructor",
+        select: "name email",
+      },
+    })
+    .sort({ enrolledAt: -1 })
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    data: enrollments,
+  });
+});
