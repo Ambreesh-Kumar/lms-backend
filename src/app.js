@@ -4,6 +4,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import sectionRoutes from "./routes/sectionRoutes.js";
+import lessonRoutes from "./routes/lessonRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -27,6 +28,7 @@ app.use(
 app.use("/api/auth/", authRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/sections", sectionRoutes);
+app.use("/api/lessons", lessonRoutes);
 
 // global error handler at last after all routes
 app.use(errorHandler);
