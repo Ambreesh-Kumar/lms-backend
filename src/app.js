@@ -6,6 +6,7 @@ import courseRoutes from "./routes/courseRoutes.js";
 import sectionRoutes from "./routes/sectionRoutes.js";
 import lessonRoutes from "./routes/lessonRoutes.js"
 import enrollmentRoutes from "./routes/enrollmentRoutes.js";
+import progressRoutes from "./routes/progressRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -31,6 +32,7 @@ app.use("/api/v1/courses", courseRoutes);
 app.use("/api/sections", sectionRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
+app.use("/api/progress", progressRoutes);
 
 // global error handler at last after all routes
 app.use(errorHandler);
