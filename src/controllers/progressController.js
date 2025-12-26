@@ -75,3 +75,82 @@ export const markLessonCompleted = asyncHandler(async (req, res) => {
   });
 });
 
+
+export const getCourseProgress = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const studentId = req.user._id;
+
+  // Only students
+  if (req.user.role !== "student") {
+    throw new ApiError(403, "Only students can view course progress");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(courseId)) {
+    throw new ApiError(400, "Invalid course id");
+  }
+
+  const course = await Course.findById(courseId).select("_id");
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // Check enrollment
+  const enrollment = await Enrollment.findOne({
+    student: studentId,
+    course: courseId,
+    status: "active",
+  });
+
+  if (!enrollment) {
+    throw new ApiError(403, "You are not enrolled in this course");
+  }
+
+  // Get all lessons in the course
+  const sections = await Section.find({ course: courseId }).select("_id");
+
+  const sectionIds = sections.map((s) => s._id);
+
+  const totalLessons = await Lesson.countDocuments({
+    section: { $in: sectionIds },
+  });
+
+  if (totalLessons === 0) {
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalLessons: 0,
+        completedLessons: 0,
+        progressPercentage: 0,
+      },
+    });
+  }
+
+  // Completed lessons by student
+  const completedLessons = await Progress.countDocuments({
+    student: studentId,
+    course: courseId,
+    completed: true,
+  });
+
+  const progressPercentage = Math.round(
+    (completedLessons / totalLessons) * 100
+  );
+
+  // Auto-complete enrollment
+  if (progressPercentage === 100 && enrollment.status !== "completed") {
+    enrollment.status = "completed";
+    await enrollment.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    data: {
+      totalLessons,
+      completedLessons,
+      progressPercentage,
+      completedAt:
+        enrollment.status === "completed" ? enrollment.updatedAt : null,
+    },
+  });
+});
+
