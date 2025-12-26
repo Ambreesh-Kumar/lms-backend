@@ -154,3 +154,66 @@ export const getCourseProgress = asyncHandler(async (req, res) => {
   });
 });
 
+
+export const getLessonCompletionMap = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const studentId = req.user._id;
+
+  if (req.user.role !== "student") {
+    throw new ApiError(403, "Only students can access lesson progress");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(courseId)) {
+    throw new ApiError(400, "Invalid course id");
+  }
+
+  const course = await Course.findById(courseId).select("_id");
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // Check enrollment
+  const enrollment = await Enrollment.findOne({
+    student: studentId,
+    course: courseId,
+    status: { $in: ["active", "completed"] },
+  });
+
+  if (!enrollment) {
+    throw new ApiError(403, "You are not enrolled in this course");
+  }
+
+  // Get all lesson IDs in course
+  const sections = await Section.find({ course: courseId }).select("_id");
+
+  const sectionIds = sections.map((s) => s._id);
+
+  const lessons = await Lesson.find({
+    section: { $in: sectionIds },
+  }).select("_id");
+
+  const lessonIds = lessons.map((l) => l._id);
+
+  // Get progress records
+  const progressRecords = await Progress.find({
+    student: studentId,
+    course: courseId,
+    lesson: { $in: lessonIds },
+    completed: true,
+  }).select("lesson completedAt").lean();
+
+  // Build completion map
+  const completionMap = {};
+
+  for (const record of progressRecords) {
+    completionMap[record.lesson.toString()] = {
+      completed: true,
+      completedAt: record.completedAt,
+    };
+  }
+
+  res.status(200).json({
+    success: true,
+    data: completionMap,
+  });
+});
