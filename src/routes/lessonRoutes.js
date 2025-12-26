@@ -5,6 +5,7 @@ import { requireInstructor } from "../middlewares/requireInstructor.js";
 import {
   createLesson,
   listLessonsBySection,
+  updateLesson
 } from "../controllers/lessonController.js";
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.use(auth);
 router.post("/", requireInstructor, createLesson);
 // Instructor and enrolled student
 router.get("/section/:sectionId", listLessonsBySection);
+router.put("/:lessonId", requireInstructor, updateLesson);
 
 export default router;

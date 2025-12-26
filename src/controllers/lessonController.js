@@ -138,3 +138,140 @@ export const listLessonsBySection = asyncHandler(async (req, res) => {
     data: lessons,
   });
 });
+
+
+export const updateLesson = asyncHandler(async (req, res) => {
+  const { lessonId } = req.params;
+  const { title, type, content, order, duration } = req.body;
+
+  // No update data provided
+  if (
+    title === undefined &&
+    type === undefined &&
+    content === undefined &&
+    order === undefined &&
+    duration === undefined
+  ) {
+    throw new ApiError(400, "No data provided to update");
+  }
+
+  // Validate lessonId
+  if (!mongoose.Types.ObjectId.isValid(lessonId)) {
+    throw new ApiError(400, "Invalid lesson id");
+  }
+
+  const lesson = await Lesson.findById(lessonId);
+  if (!lesson) {
+    throw new ApiError(404, "Lesson not found");
+  }
+
+  const section = await Section.findById(lesson.section);
+  if (!section) {
+    throw new ApiError(404, "Section not found");
+  }
+
+  const course = await Course.findById(section.course);
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // Ownership check
+  if (course.instructor.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "You are not allowed to update this lesson");
+  }
+
+  // Resolve effective lesson type (important for safe validation)
+  const effectiveType = type ?? lesson.type;
+
+  // Update title
+  if (title !== undefined) {
+    if (typeof title !== "string" || title.trim() === "") {
+      throw new ApiError(400, "Lesson title cannot be empty");
+    }
+    lesson.title = title.trim();
+  }
+
+  // Update type
+  if (type !== undefined) {
+    if (!["video", "text"].includes(type)) {
+      throw new ApiError(400, "Invalid lesson type");
+    }
+
+    // Adjust dependent fields on type change
+    if (type !== lesson.type) {
+      if (type === "text") {
+        lesson.duration = undefined;
+      }
+      if (type === "video" && lesson.duration === undefined) {
+        lesson.duration = 0;
+      }
+    }
+
+    lesson.type = type;
+  }
+
+  // Update content (validated against effective type)
+  if (content !== undefined) {
+    if (effectiveType === "text") {
+      if (typeof content !== "string" || content.trim() === "") {
+        throw new ApiError(400, "Lesson content cannot be empty");
+      }
+      lesson.content = content.trim();
+    }
+
+    if (effectiveType === "video") {
+      try {
+        new URL(content);
+      } catch {
+        throw new ApiError(400, "Invalid video URL");
+      }
+      lesson.content = content;
+    }
+  }
+
+  // Update order
+  if (order !== undefined) {
+    if (!Number.isInteger(order) || order < 1) {
+      throw new ApiError(400, "Order must be a positive integer");
+    }
+
+    if (order !== lesson.order) {
+      const orderExists = await Lesson.findOne({
+        section: lesson.section,
+        order,
+        _id: { $ne: lesson._id },
+      });
+
+      if (orderExists) {
+        throw new ApiError(
+          409,
+          "Lesson with this order already exists in the section"
+        );
+      }
+
+      lesson.order = order;
+    }
+  }
+
+  // Update duration (video only)
+  if (duration !== undefined) {
+    if (effectiveType !== "video") {
+      lesson.duration = undefined;
+    } else if (duration < 0) {
+      throw new ApiError(400, "Duration cannot be negative");
+    } else {
+      lesson.duration = duration;
+    }
+  }
+
+  await lesson.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Lesson updated successfully",
+    data: lesson,
+  });
+});
+
+
+
