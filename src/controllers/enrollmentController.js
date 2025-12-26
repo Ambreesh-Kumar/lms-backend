@@ -141,3 +141,54 @@ export const listCourseEnrollments = asyncHandler(async (req, res) => {
   });
 });
 
+
+export const updateEnrollmentStatus = asyncHandler(async (req, res) => {
+  const { enrollmentId } = req.params;
+  const { status } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(enrollmentId)) {
+    throw new ApiError(400, "Invalid enrollment id");
+  }
+
+  if (!["completed", "cancelled"].includes(status)) {
+    throw new ApiError(400, "Invalid enrollment status");
+  }
+
+  const enrollment = await Enrollment.findById(enrollmentId);
+  if (!enrollment) {
+    throw new ApiError(404, "Enrollment not found");
+  }
+
+  // Fetch course for ownership validation
+  const course = await Course.findById(enrollment.course).select("instructor");
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // Instructor ownership check
+  if (course.instructor.toString() !== req.user._id.toString()) {
+    throw new ApiError(
+      403,
+      "You are not allowed to update this enrollment"
+    );
+  }
+
+  // Prevent invalid state changes
+  if (enrollment.status !== "active") {
+    throw new ApiError(
+      409,
+      `Enrollment already ${enrollment.status}`
+    );
+  }
+
+  enrollment.status = status;
+  await enrollment.save();
+
+  res.status(200).json({
+    success: true,
+    message: `Enrollment marked as ${status}`,
+    data: enrollment,
+  });
+});
+
+
