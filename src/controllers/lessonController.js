@@ -274,4 +274,42 @@ export const updateLesson = asyncHandler(async (req, res) => {
 });
 
 
+export const deleteLesson = asyncHandler(async (req, res) => {
+  const { lessonId } = req.params;
+
+  // Validate lessonId
+  if (!mongoose.Types.ObjectId.isValid(lessonId)) {
+    throw new ApiError(400, "Invalid lesson id");
+  }
+
+  const lesson = await Lesson.findById(lessonId);
+  if (!lesson) {
+    throw new ApiError(404, "Lesson not found");
+  }
+
+  const section = await Section.findById(lesson.section);
+  if (!section) {
+    throw new ApiError(404, "Section not found");
+  }
+
+  const course = await Course.findById(section.course);
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // Ownership check
+  if (course.instructor.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "You are not allowed to delete this lesson");
+  }
+
+  await lesson.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "Lesson deleted successfully",
+  });
+});
+
+
+
 
