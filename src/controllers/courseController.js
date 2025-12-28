@@ -344,7 +344,6 @@ export const getSingleCourse = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const deleteCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
@@ -375,13 +374,11 @@ export const deleteCourse = asyncHandler(async (req, res) => {
   // Check for enrollments
   const enrollmentCount = await Enrollment.countDocuments({
     course: courseId,
+    status: { $in: ["active", "completed"] },
   });
 
   if (enrollmentCount > 0) {
-    throw new ApiError(
-      400,
-      "Course with enrollments cannot be deleted"
-    );
+    throw new ApiError(400, "Course with enrollments cannot be deleted");
   }
 
   // Delete thumbnail from Cloudinary

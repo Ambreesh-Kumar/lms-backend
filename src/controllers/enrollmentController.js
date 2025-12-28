@@ -39,19 +39,29 @@ export const createEnrollment = asyncHandler(async (req, res) => {
     throw new ApiError(409, "You are already enrolled in this course");
   }
 
-  // Determine payment status
-  const isPaid = course.price > 0 ? false : true; // free course: auto-paid
-
-  const enrollment = await Enrollment.create({
+  let enrollmentData = {
     course: courseId,
     student: req.user._id,
-    isPaid,
-    status: "active",
-  });
+  };
+
+  if (course.price > 0) {
+    // Paid course
+    enrollmentData.status = "pending";
+    enrollmentData.isPaid = false;
+  } else {
+    // Free course
+    enrollmentData.status = "active";
+    enrollmentData.isPaid = true;
+  }
+
+  const enrollment = await Enrollment.create(enrollmentData);
 
   res.status(201).json({
     success: true,
-    message: "Enrollment created successfully",
+    message:
+      course.price > 0
+        ? "Enrollment created, pending payment"
+        : "Enrollment created successfully",
     data: enrollment,
   });
 });
@@ -66,7 +76,7 @@ export const listMyEnrollments = asyncHandler(async (req, res) => {
 
   const enrollments = await Enrollment.find({
     student: user._id,
-    status: { $ne: "cancelled" },
+    status: { $in: ["active", "completed"] },
   })
     .populate({
       path: "course",
@@ -76,7 +86,7 @@ export const listMyEnrollments = asyncHandler(async (req, res) => {
         select: "name email",
       },
     })
-    .sort({ enrolledAt: -1 })
+    .sort({ createdAt: -1 })
     .lean();
 
   res.status(200).json({
@@ -84,7 +94,6 @@ export const listMyEnrollments = asyncHandler(async (req, res) => {
     data: enrollments,
   });
 });
-
 
 export const listCourseEnrollments = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
@@ -112,7 +121,10 @@ export const listCourseEnrollments = asyncHandler(async (req, res) => {
 
   const filter = { course: courseId };
 
-  if (status && ["active", "completed", "cancelled"].includes(status)) {
+  if (
+    status &&
+    ["pending", "active", "completed", "cancelled"].includes(status)
+  ) {
     filter.status = status;
   }
 
@@ -123,7 +135,7 @@ export const listCourseEnrollments = asyncHandler(async (req, res) => {
         path: "student",
         select: "name email",
       })
-      .sort({ enrolledAt: -1 })
+      .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean(),
@@ -141,7 +153,6 @@ export const listCourseEnrollments = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const updateEnrollmentStatus = asyncHandler(async (req, res) => {
   const { enrollmentId } = req.params;
   const { status } = req.body;
@@ -150,7 +161,9 @@ export const updateEnrollmentStatus = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid enrollment id");
   }
 
-  if (!["completed", "cancelled"].includes(status)) {
+  // Validate requested status
+  const validStatuses = ["active", "completed", "cancelled"];
+  if (!validStatuses.includes(status)) {
     throw new ApiError(400, "Invalid enrollment status");
   }
 
@@ -167,21 +180,32 @@ export const updateEnrollmentStatus = asyncHandler(async (req, res) => {
 
   // Instructor ownership check
   if (course.instructor.toString() !== req.user._id.toString()) {
-    throw new ApiError(
-      403,
-      "You are not allowed to update this enrollment"
-    );
+    throw new ApiError(403, "You are not allowed to update this enrollment");
   }
 
-  // Prevent invalid state changes
-  if (enrollment.status !== "active") {
+  // Define allowed transitions
+  const transitions = {
+    pending: ["active", "cancelled"], // payment success → active or cancelled
+    active: ["completed", "cancelled"], // course in progress → complete or cancel
+    completed: [], // completed cannot change
+    cancelled: [], // cancelled cannot change
+  };
+
+  const allowed = transitions[enrollment.status];
+  if (!allowed.includes(status)) {
     throw new ApiError(
       409,
-      `Enrollment already ${enrollment.status}`
+      `Cannot change enrollment status from "${enrollment.status}" to "${status}"`
     );
   }
 
   enrollment.status = status;
+
+  // Automatically mark as paid if moving from pending → active
+  if (enrollment.status === "active" && !enrollment.isPaid) {
+    enrollment.isPaid = true;
+  }
+
   await enrollment.save();
 
   res.status(200).json({
@@ -190,5 +214,4 @@ export const updateEnrollmentStatus = asyncHandler(async (req, res) => {
     data: enrollment,
   });
 });
-
 

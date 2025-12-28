@@ -10,6 +10,7 @@ import progressRoutes from "./routes/progressRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import instructorDashboardRoutes from "./routes/instructorDashboardRoutes.js";
 import adminDashboardRoutes from "./routes/adminDashboardRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -39,6 +40,7 @@ app.use("/api/progress", progressRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/instructor", instructorDashboardRoutes);
 app.use("/api/admin", adminDashboardRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // global error handler at last after all routes
 app.use(errorHandler);

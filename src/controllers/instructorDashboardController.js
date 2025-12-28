@@ -37,8 +37,8 @@ export const getInstructorDashboard = asyncHandler(async (req, res) => {
     course: { $in: courseIds },
   }).lean();
 
-  const activeEnrollments = enrollments.filter(
-    (e) => e.status === "active"
+  const activeEnrollments = enrollments.filter((e) =>
+    ["active", "completed"].includes(e.status)
   );
 
   const overview = {

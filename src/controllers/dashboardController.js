@@ -5,7 +5,7 @@ import { Section } from "../models/Section.js";
 import { Lesson } from "../models/Lesson.js";
 import { Progress } from "../models/Progress.js";
 import ApiError from "../utils/ApiError.js";
-import asyncHandler from "../utils/asyncHandler.js";
+import asyncHandler from "../utils/AsyncHandler.js";
 
 export const getStudentDashboard = asyncHandler(async (req, res) => {
   const user = req.user;

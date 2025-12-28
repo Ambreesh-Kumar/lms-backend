@@ -1,4 +1,4 @@
-import asyncHandler from "../utils/asyncHandler.js";
+import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { User } from "../models/User.js";
 import { Course } from "../models/Course.js";
@@ -14,18 +14,28 @@ export const getAdminDashboard = asyncHandler(async (req, res) => {
   // Total courses
   const courses = await Course.find({}).select("_id status price").lean();
   const totalCourses = courses.length;
-  const publishedCourses = courses.filter(c => c.status === "published").length;
+  const publishedCourses = courses.filter(
+    (c) => c.status === "published"
+  ).length;
   const draftCourses = totalCourses - publishedCourses;
 
   // Total enrollments
   const enrollments = await Enrollment.find({}).lean();
-  const totalEnrollments = enrollments.length;
-  const activeEnrollments = enrollments.filter(e => e.status === "active").length;
+  const totalEnrollments = enrollments.filter(
+    (e) => e.status !== "pending"
+  ).length;
+  const activeEnrollments = enrollments.filter((e) =>
+    ["active", "completed"].includes(e.status)
+  ).length;
 
   // Revenue (paid enrollments only, test mode)
-  const paidEnrollments = enrollments.filter(e => e.isPaid);
+  const paidEnrollments = enrollments.filter(
+    (e) => e.isPaid && ["active", "completed"].includes(e.status)
+  );
   const totalRevenue = paidEnrollments.reduce((sum, e) => {
-    const course = courses.find(c => c._id.toString() === e.course.toString());
+    const course = courses.find(
+      (c) => c._id.toString() === e.course.toString()
+    );
     return sum + (course?.price || 0);
   }, 0);
 
@@ -35,18 +45,18 @@ export const getAdminDashboard = asyncHandler(async (req, res) => {
       users: {
         students: studentsCount,
         instructors: instructorsCount,
-        admins: adminsCount
+        admins: adminsCount,
       },
       courses: {
         total: totalCourses,
         published: publishedCourses,
-        draft: draftCourses
+        draft: draftCourses,
       },
       enrollments: {
         total: totalEnrollments,
-        active: activeEnrollments
+        active: activeEnrollments,
       },
-      revenue: totalRevenue
-    }
+      revenue: totalRevenue,
+    },
   });
 });
