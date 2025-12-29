@@ -1,4 +1,5 @@
 const errorHandler = (err, req, res, next) => {
+  console.error("ERROR ", err)
   // Default error values (used when error is unknown or not explicitly handled)
   let statusCode = err.statusCode || 500;
   let message = err.message || "Internal Server Error";
