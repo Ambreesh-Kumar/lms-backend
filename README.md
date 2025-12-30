@@ -62,11 +62,18 @@ GET    /api/auth/logout
 * Course pricing (free / paid)
 * Thumbnail upload via Cloudinary
 #### Key APIs
+##### 🌍 Public APIs
 ```
-POST   /api/courses
-PUT    /api/courses/:id
-GET    /api/courses
-GET    /api/courses/:id
+GET /api/v1/courses/published
+GET /api/v1/courses/:courseId
+```
+##### 👨‍🏫 Instructor APIs
+```
+GET    /api/v1/courses/instructor
+POST   /api/v1/courses
+PUT    /api/v1/courses/:courseId
+PATCH  /api/v1/courses/:courseId/status
+DELETE /api/v1/courses/:courseId
 ```
 
 ### Sections & Lessons
