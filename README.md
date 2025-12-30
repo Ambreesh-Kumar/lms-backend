@@ -1,16 +1,23 @@
 # 🎓 Learning Management System (LMS) – Backend API
-A scalable, production-ready LMS backend built with Node.js, Express, MongoDB, designed to support role-based learning, paid courses, secure payments, and progress tracking.
-This backend powers an end-to-end LMS flow including course creation, content management, student enrollment, payment processing, and learning progress analytics.
+A **scalable, production-ready LMS backend** built with **Node.js, Express, MongoDB**, designed to support **role-based learning, paid courses, secure payments**, and **progress tracking**.
+This backend powers an end-to-end LMS flow including **course creation, content management, student enrollment, payment processing**, and **learning progress analytics**.
+
+## Why This Project?
+This LMS backend was built to demonstrate real-world backend engineering skills:
+- Designing complex relational data models
+- Handling payment flows with retries and verification
+- Implementing role-based access control
+- Writing scalable, production-ready APIs
 
 ## 🚀 Key Highlights
-* Role-based system (Admin, Instructor, Student)
-* Paid course workflow with Razorpay
-* Robust enrollment lifecycle (pending → active → completed / cancelled)
-* Instructor & student dashboards
-* Video + text lessons support
-* Cloudinary-based media uploads
-* Transactional payment verification
-* Production-grade error handling & data consistency
+* **Role-based system** (Admin, Instructor, Student)
+* **Paid course workflow with Razorpay**
+* **Robust enrollment lifecycle** (`pending → active → completed / cancelled`)
+* **Instructor & student dashboards**
+* **Video + text lessons support**
+* **Cloudinary-based media uploads**
+* **Transactional payment verification**
+* **Production-grade error handling & data consistency**
 
 ## 🧠 System Roles & Capabilities
 ### 👨‍🏫 Instructor
@@ -40,7 +47,8 @@ This backend powers an end-to-end LMS flow including course creation, content ma
 ```
 POST   /api/auth/register
 POST   /api/auth/login
-GET    /api/auth/profile
+GET    /api/auth/refresh_token
+GET    /api/auth/logout
 ```
 
 ### Course Management
@@ -81,7 +89,7 @@ cancelled  → enrollment revoked / expired
 ```
 * Prevents duplicate enrollments
 * Supports payment retries
-* Clean separation between enrollment and payment
+* Clean separation between **enrollment** and **payment**
 #### Key APIs
 ```
 POST   /api/enrollments
@@ -135,15 +143,65 @@ GET   /api/dashboard/student
 
 ## 🧾 Database Design (MongoDB)
 #### Key Collections
-* User
-* Course
-* Section
-* Lesson
-* Enrollment
-* Progress
-* Payment
+* **User**
+* **Course**
+* **Section**
+* **Lesson**
+* **Enrollment**
+* **Progress**
+* **Payment**
 #### Design Principles
 * Clear entity separation
 * Referential integrity via ObjectIds
 * Indexed fields for performance
 * Enum-based state control (enrollment & payments)
+
+## 🔒 Security & Best Practices
+* JWT authentication
+* Role-based access checks
+* Input validation & sanitization
+* Centralized error handling
+* Idempotent payment verification
+* MongoDB transactions for critical flows
+
+## 🧩 Architecture Overview
+```
+Client (Frontend / Postman)
+        ↓
+Express API (Controllers)
+        ↓
+Service Logic + Validation
+        ↓
+MongoDB (Mongoose ODM)
+        ↓
+Cloudinary / Razorpay
+```
+
+## 🧪 Testing & Validation
+* All critical flows tested via **Postman**
+* Covered scenarios:
+  * Duplicate enrollment prevention
+  * Payment retries
+  * Invalid payment signature
+  * Pending → active enrollment transitions
+  * Dashboard accuracy
+ 
+## 🛠️ Tech Stack
+* **Node.js**
+* **Express.js**
+* **MongoDB + Mongoose**
+* **JWT Authentication**
+* **Razorpay Payment Gateway**
+* **Multer + Cloudinary**
+* **REST API Architecture**
+
+## 📌 Project Status
+* Backend development **completed**
+* Payment flow **fully implemented & tested**
+* Ready for frontend integration
+* Designed for future production scaling
+
+## 👤 Author
+**Ambreesh Kumar**
+Backend Developer | MERN Stack  
+Focused on building **scalable, real-world backend systems**
