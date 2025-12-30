@@ -294,11 +294,6 @@ Focused on building **scalable, real-world backend systems**
 - **Email**: kumarambreesh70@gmail.com
 
 ## License & Usage
-
 © 2025 Ambreesh Kumar. All rights reserved.
 
-This repository and its code are the personal property of Ambreesh Kumar.  
-You may **view** the code and test the APIs as documented in this README for learning or interview purposes.  
-
-**Do not copy, distribute, modify, or use this code for commercial purposes** without explicit permission.
 
