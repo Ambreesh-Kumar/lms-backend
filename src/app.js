@@ -23,10 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // CORS
-// If you keep frontend on different origin, set credentials and origin properly.
 app.use(
   cors({
-    origin: "http://localhost:3000", // change to your frontend origin
+    origin: process.env.CLIENT_URL === "*" ? true : process.env.CLIENT_URL,
     credentials: true,
   })
 );
