@@ -48,33 +48,38 @@ This LMS backend was built to demonstrate real-world backend engineering skills:
 * JWT-based authentication
 * Role-based access control (RBAC)
 * Protected routes for instructors & students
-#### Key APIs
-```
-POST   /api/auth/register
-POST   /api/auth/login
-GET    /api/auth/refresh_token
-GET    /api/auth/logout
-```
+#### Auth APIs
+
+| Method | Endpoint                | Description                   | Auth Required |
+|--------|------------------------|-------------------------------|---------------|
+| POST   | /api/auth/register     | Register a new user           | No            |
+| POST   | /api/auth/login        | Login user and get tokens     | No            |
+| GET    | /api/auth/refresh_token | Refresh access token          | No            |
+| POST   | /api/auth/logout       | Logout user                   | Yes           |
+
 
 ### Course Management
 * Instructor-only course creation
 * Draft & publish workflow
 * Course pricing (free / paid)
 * Thumbnail upload via Cloudinary
-#### Key APIs
-##### 🌍 Public APIs
-```
-GET /api/v1/courses/published
-GET /api/v1/courses/:courseId
-```
-##### 👨‍🏫 Instructor APIs
-```
-GET    /api/v1/courses/instructor
-POST   /api/v1/courses
-PUT    /api/v1/courses/:courseId
-PATCH  /api/v1/courses/:courseId/status
-DELETE /api/v1/courses/:courseId
-```
+#### Courses APIs
+
+##### Public APIs
+| Method | Endpoint                     | Description                          | Auth |
+|------|------------------------------|--------------------------------------|------|
+| GET  | /api/v1/courses/published    | List all published courses           | No   |
+| GET  | /api/v1/courses/:courseId    | Get single course details             | Optional |
+
+##### Instructor APIs (Auth Required)
+| Method | Endpoint                          | Description                          | Role |
+|------|-----------------------------------|--------------------------------------|------|
+| GET  | /api/v1/courses/instructor        | List instructor’s courses            | Instructor |
+| POST | /api/v1/courses                  | Create a new course                  | Instructor |
+| PUT  | /api/v1/courses/:courseId        | Update course details                | Instructor |
+| PATCH| /api/v1/courses/:courseId/status | Update course publish status         | Instructor |
+| DELETE | /api/v1/courses/:courseId      | Delete a course                      | Instructor |
+
 
 ### Sections & Lessons
 * Course → Sections → Lessons hierarchy
@@ -82,14 +87,30 @@ DELETE /api/v1/courses/:courseId
 * Supports:
    * 🎥 Video lessons
    * 📝 Text-based lessons
-#### Key APIs
-```
-POST   /api/sections
-GET    /api/sections/:courseId
+#### Sections APIs
 
-POST   /api/lessons
-GET    /api/lessons/:sectionId
-```
+##### Public / Optional Auth APIs
+| Method | Endpoint                         | Description                          | Auth |
+|------|----------------------------------|--------------------------------------|------|
+| GET  | /api/sections/course/:courseId   | List sections of a course            | Optional |
+
+##### Instructor APIs (Auth Required)
+| Method | Endpoint                 | Description                          | Role |
+|------|--------------------------|--------------------------------------|------|
+| POST | /api/sections            | Create a new section                 | Instructor |
+| PUT  | /api/sections/:sectionId | Update section details               | Instructor |
+| DELETE | /api/sections/:sectionId | Delete a section                   | Instructor |
+
+### Lessons APIs
+
+#### Authenticated APIs
+| Method | Endpoint                           | Description                          | Access |
+|------|------------------------------------|--------------------------------------|--------|
+| POST | /api/lessons                       | Create a new lesson                  | Instructor |
+| GET  | /api/lessons/section/:sectionId    | List lessons in a section            | Instructor / Enrolled Student |
+| PUT  | /api/lessons/:lessonId             | Update lesson details                | Instructor |
+| DELETE | /api/lessons/:lessonId           | Delete a lesson                      | Instructor |
+
 
 ### Enrollment System (State-Driven)
 A **carefully designed enrollment lifecycle:**
@@ -102,11 +123,41 @@ cancelled  → enrollment revoked / expired
 * Prevents duplicate enrollments
 * Supports payment retries
 * Clean separation between **enrollment** and **payment**
-#### Key APIs
-```
-POST   /api/enrollments
-GET    /api/enrollments/my
-```
+#### Enrollment APIs
+
+##### Student APIs
+| Method | Endpoint                    | Description                           | Access |
+|------|-----------------------------|---------------------------------------|--------|
+| POST | /api/enrollments            | Enroll in a course                    | Student |
+| GET  | /api/enrollments/me         | Get my enrolled courses               | Student |
+
+##### Instructor APIs
+| Method | Endpoint                                 | Description                           | Access |
+|------|------------------------------------------|---------------------------------------|--------|
+| GET  | /api/enrollments/course/:courseId        | List enrollments for a course         | Instructor |
+| PATCH | /api/enrollments/:enrollmentId/status   | Update enrollment status              | Instructor |
+
+### Progress Module Overview
+- Tracks student learning progress at **lesson level**
+- Automatically calculates **course completion percentage**
+- Prevents duplicate lesson completion entries
+- Used by:
+  - Student Dashboard
+  - Course Progress UI
+  - Completion tracking logic
+#### Notes
+- Authentication required for all progress APIs
+- Only enrolled students can update or view progress
+- Progress is stored per `student + course + lesson`
+
+#### Progress APIs (Student Learning Progress)
+
+| Method | Endpoint                                  | Description                                   | Access  |
+|------|--------------------------------------------|-----------------------------------------------|---------|
+| POST | /api/progress/complete                     | Mark a lesson as completed                    | Student |
+| GET  | /api/progress/course/:courseId             | Get overall course progress (%)               | Student |
+| GET  | /api/progress/course/:courseId/lessons     | Get lesson-wise completion status map         | Student |
+
 
 ### Payment Module (Razorpay Integration)
 #### 🔐 Secure Payment Flow
@@ -121,11 +172,13 @@ GET    /api/enrollments/my
 * MongoDB transactions for consistency
 * Retry handling (old pending payments auto-failed)
 
-#### Key APIs
-```
-POST   /api/payments/create-order
-POST   /api/payments/verify
-```
+##### Payment APIs (Razorpay)
+
+| Method | Endpoint                     | Description                               | Access |
+|------|------------------------------|-------------------------------------------|--------|
+| POST | /api/payments/create-order   | Create Razorpay order for course purchase | Student |
+| POST | /api/payments/verify         | Verify Razorpay payment signature         | Student |
+
 
 ### Dashboards & Analytics
 #### 📊 Instructor Dashboard
@@ -140,17 +193,29 @@ POST   /api/payments/verify
 * Completed courses
 * Learning progress
 
-### 🛡️ Admin Dashboard 
+#### 🛡️ Admin Dashboard 
 - Total users (students & instructors)
 - Total courses (published / draft)
 - Total enrollments
 - Revenue overview from paid courses
 
-#### Key APIs
-```
-GET   /api/dashboard/instructor
-GET   /api/dashboard/student
-```
+##### Instructor Dashboard APIs
+
+| Method | Endpoint                     | Description                                   | Access     |
+|------|------------------------------|-----------------------------------------------|------------|
+| GET  | /api/instructor/dashboard     | Get instructor dashboard overview & stats    | Instructor |
+
+##### Student Dashboard APIs
+
+| Method | Endpoint                 | Description                                 | Access  |
+|------|--------------------------|---------------------------------------------|---------|
+| GET  | /api/dashboard/student    | Get student dashboard overview & progress   | Student |
+
+##### Admin Dashboard APIs
+
+| Method | Endpoint              | Description                               | Access |
+|------|-----------------------|-------------------------------------------|--------|
+| GET  | /api/admin/dashboard  | Get platform-wide admin dashboard metrics | Admin  |
 
 ## 🗂️ Media Upload System
 * **Multer** for handling multipart uploads
