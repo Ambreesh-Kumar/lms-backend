@@ -2,6 +2,11 @@
 A **scalable, production-ready LMS backend** built with **Node.js, Express, MongoDB**, designed to support **role-based learning, paid courses, secure payments**, and **progress tracking**.
 This backend powers an end-to-end LMS flow including **course creation, content management, student enrollment, payment processing**, and **learning progress analytics**.
 
+## API Base URL  
+```
+https://api.lms-backend.com
+```
+
 ## Why This Project?
 This LMS backend was built to demonstrate real-world backend engineering skills:
 - Designing complex relational data models
@@ -133,8 +138,6 @@ POST   /api/payments/verify
 - Total courses (published / draft)
 - Total enrollments
 - Revenue overview from paid courses
-- Course moderation and visibility control
-- Instructor activity overview
 
 #### Key APIs
 ```
@@ -212,4 +215,8 @@ Cloudinary / Razorpay
 ## 👤 Developer
 **Ambreesh Kumar**  
 Backend Developer | Node.js | Express | MongoDB | REST APIs  
-Focused on building **scalable, real-world backend systems**
+Focused on building **scalable, real-world backend systems**  
+
+- GitHub: https://github.com/Ambreesh-Kumar 
+- LinkedIn: [https://www.linkedin.com/in/ambreesh-kumar](https://www.linkedin.com/in/ambreesh-kumar?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+- Email: kumarambreesh70@gmail.com
