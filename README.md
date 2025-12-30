@@ -128,6 +128,14 @@ POST   /api/payments/verify
 * Completed courses
 * Learning progress
 
+### 🛡️ Admin Dashboard 
+- Total users (students & instructors)
+- Total courses (published / draft)
+- Total enrollments
+- Revenue overview from paid courses
+- Course moderation and visibility control
+- Instructor activity overview
+
 #### Key APIs
 ```
 GET   /api/dashboard/instructor
@@ -201,7 +209,7 @@ Cloudinary / Razorpay
 * Ready for frontend integration
 * Designed for future production scaling
 
-## 👤 Author
+## 👤 Developer
 **Ambreesh Kumar**
-Backend Developer | MERN Stack  
+Backend Developer | Node.js | Express | MongoDB | REST APIs  
 Focused on building **scalable, real-world backend systems**
