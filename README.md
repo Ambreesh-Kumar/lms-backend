@@ -210,6 +210,6 @@ Cloudinary / Razorpay
 * Designed for future production scaling
 
 ## 👤 Developer
-**Ambreesh Kumar**
+**Ambreesh Kumar**  
 Backend Developer | Node.js | Express | MongoDB | REST APIs  
 Focused on building **scalable, real-world backend systems**
