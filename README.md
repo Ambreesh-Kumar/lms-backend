@@ -4,7 +4,7 @@ This backend powers an end-to-end LMS flow including **course creation, content 
 
 ## API Base URL  
 ```
-https://api.lms-backend.com
+https://lms-backend-rmh5.onrender.com
 ```
 
 ## Why This Project?
