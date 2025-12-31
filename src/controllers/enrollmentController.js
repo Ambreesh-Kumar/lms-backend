@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import asyncHandler from "../utils/asyncHandler.js";
+import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { Enrollment } from "../models/Enrollment.js";
 import { Course } from "../models/Course.js";

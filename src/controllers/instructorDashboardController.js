@@ -3,7 +3,7 @@ import { Course } from "../models/Course.js";
 import { Enrollment } from "../models/Enrollment.js";
 import { Progress } from "../models/Progress.js";
 import { Lesson } from "../models/Lesson.js";
-import asyncHandler from "../utils/asyncHandler.js";
+import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 
 export const getInstructorDashboard = asyncHandler(async (req, res) => {
