@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Unauthorized Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="/css/payments/base.css" />
+  </head>
+  <body>
+    <div class="card">
+      <div
+        class="success-icon"
+        style="
+          background: #fdecea;
+          color: #c62828;
+          width: 72px;
+          height: 72px;
+          font-size: 36px;
+          margin: 0 auto 20px;
+          padding: 20px;
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          border-radius: 90px;
+          padding-top: 5px;
+        "
+      >
+        ⚠️
+      </div>
+
+      <h1>Unauthorized Access</h1>
+      <br/>
+
+      <p>
+        Your session has expired or your access token is invalid.<br /><br/>
+        If you are using Postman, please log in again to get a fresh token and
+        replace it in the query parameter <code>?token=</code> to continue.<br />
+        If you are using the browser, please log in again via the login page.
+      </p>
+    </div>
+  </body>
+</html>
