@@ -159,25 +159,74 @@ cancelled  → enrollment revoked / expired
 | GET  | /api/progress/course/:courseId/lessons     | Get lesson-wise completion status map         | Student |
 
 
-### Payment Module (Razorpay Integration)
-#### 🔐 Secure Payment Flow
-1. Create Razorpay order
-2. Redirect to payment gateway
-3. Verify payment signature
-4. Activate enrollment atomically
+### 💳 Payment Module (Razorpay Integration – EJS + API)
 
-#### ⚙️ Features
-* Razorpay Orders API
-* Signature verification using HMAC SHA256
-* MongoDB transactions for consistency
-* Retry handling (old pending payments auto-failed)
+#### 🔐 Secure & Flexible Payment Architecture
+This LMS supports **two payment flows**:
+1. **Server-Rendered Checkout (EJS)** – used for demo & backend-only validation
+2. **API-Based Checkout** – preserved for future frontend integration (React / Mobile)
 
-##### Payment APIs (Razorpay)
+Both flows share the **same verification logic and database guarantees**.
 
-| Method | Endpoint                     | Description                               | Access |
-|------|------------------------------|-------------------------------------------|--------|
-| POST | /api/payments/create-order   | Create Razorpay order for course purchase | Student |
-| POST | /api/payments/verify         | Verify Razorpay payment signature         | Student |
+#### 🧭 Payment Checkout Flow (EJS – Server Rendered)
+1. Student login (`https://lms-backend-rmh5.onrender.com/api/auth/login`) in Postman and get **accessToken** 
+2. Student enrolls in a paid course `https://lms-backend-rmh5.onrender.com/api/enrollments`
+3. Server creates / reuses a Razorpay order
+4. Student open Checkout page in browser `GET /payments/ejs/checkout/:enrollmentId?token=<accessToken>`
+   * checkout_url example:
+   ```
+   https://lms-backend-rmh5.onrender.com/payments/ejs/checkout/695bf4a91c49853b851d6665/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTRiZjZiZThmODY5NWY3NTk2YTMxY2MiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2NzYzNTgwNSwiZXhwIjoxNzY3NjM2NzA1fQ.sxOW79venrTFhYlSM9AWupt0nNjexPQg75wEUg13Qy8
+   ```
+5. Razorpay Checkout modal opens
+6. Razorpay redirects payment details to backend
+7. Backend verifies:
+  * Signature (HMAC SHA256)
+  * Order ↔ Payment integrity
+  * Idempotency (prevents double payment)
+8. Enrollment activated using MongoDB transaction
+9. User is redirected to result page:
+  * ✅ success
+  * ❌ failure
+  * ⚠️ cancelled
+  * ℹ️ already paid
+⚠️ All critical state changes happen **only on the server**
+
+#### 🖥️ EJS Checkout Routes
+| Method | Endpoint                             | Description                         |
+| ------ | ------------------------------------ | ----------------------------------- |
+| GET    | /payments/ejs/checkout/:enrollmentId | Render Razorpay checkout page (EJS) |
+| POST   | /payments/ejs/verify                 | Verify payment & update DB          |
+
+Authentication for EJS checkout is handled via **access token in query params** (for backend-only demo use).
+
+#### 🔁 Payment APIs (Preserved for Frontend Use)
+| Method | Endpoint                   | Description                       | Access  |
+| ------ | -------------------------- | --------------------------------- | ------- |
+| POST   | /api/payments/create-order | Create Razorpay order via API     | Student |
+| POST   | /api/payments/verify       | Verify Razorpay payment signature | Student |
+
+#### 🛡️ Payment Safety & Consistency
+* ✔ Razorpay signature verification (HMAC SHA256)
+* ✔ Idempotent verification (safe retry support)
+* ✔ MongoDB transactions (Payment + Enrollment)
+* ✔ Prevents:
+   * Double payments
+   * Order reuse abuse
+   * Partial DB updates
+* ✔ Clear handling for:
+   * Already paid enrollment
+   * Expired / invalid session
+   * Cancelled payments
+
+#### 🧪 Razorpay Test Card Details
+##### ✅ Successful Payment
+| Card Number         | Expiry     | CVV |
+| ------------------- | ---------- | --- |
+| 5267 3181 8797 5449 | Any future | 123 |
+##### ❌ Failed Payment
+* Use any invalid OTP or cancel payment in Razorpay modal
+
+International cards are not supported in Razorpay test mode (India).
 
 
 ### Dashboards & Analytics
