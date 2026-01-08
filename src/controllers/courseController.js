@@ -6,6 +6,7 @@ import { Lesson } from "../models/Lesson.js";
 import { Enrollment } from "../models/Enrollment.js";
 import { uploadToCloudinary } from "../utils/cloudinaryUpload.js";
 import deleteFromCloudinary from "../utils/cloudinaryDelete.js";
+import { processThumbnail } from "../utils/processThumbnail.js";
 import mongoose from "mongoose";
 
 export const createCourse = asyncHandler(async (req, res) => {
@@ -29,8 +30,9 @@ export const createCourse = asyncHandler(async (req, res) => {
 
   if (file) {
     try {
+      const processedBuffer = await processThumbnail(file);
       const cloudRes = await uploadToCloudinary(
-        file.buffer,
+        processedBuffer,
         "courses_thumbnails"
       );
       thumbnailUrl = cloudRes.secure_url;

@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import multer from "multer";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
@@ -12,6 +13,7 @@ import instructorDashboardRoutes from "./routes/instructorDashboardRoutes.js";
 import adminDashboardRoutes from "./routes/adminDashboardRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import paymentEjsRoutes from "./routes/payment.ejs.routes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -52,6 +54,27 @@ app.use("/api/instructor", instructorDashboardRoutes);
 app.use("/api/admin", adminDashboardRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/payments", paymentEjsRoutes);
+app.use("/api/ai", aiRoutes);
+
+
+// multer error
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+
+  if (err.message === "Only image files are allowed") {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+
+  next(err);
+});
 
 // global error handler at last after all routes
 app.use(errorHandler);
