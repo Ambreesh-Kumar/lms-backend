@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import sectionRoutes from "./routes/sectionRoutes.js";
 import lessonRoutes from "./routes/lessonRoutes.js";
+import adminLessonRoutes from "./routes/adminLessonRoutes.js";
 import enrollmentRoutes from "./routes/enrollmentRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
@@ -47,6 +48,8 @@ app.use("/api/auth/", authRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/sections", sectionRoutes);
 app.use("/api/lessons", lessonRoutes);
+// Admin lessons
+app.use("/api/admin/lessons", adminLessonRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/dashboard", dashboardRoutes);
@@ -55,7 +58,6 @@ app.use("/api/admin", adminDashboardRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/payments", paymentEjsRoutes);
 app.use("/api/ai", aiRoutes);
-
 
 // multer error
 app.use((err, req, res, next) => {

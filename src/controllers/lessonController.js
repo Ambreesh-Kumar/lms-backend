@@ -141,6 +141,31 @@ export const listLessonsBySection = asyncHandler(async (req, res) => {
   });
 });
 
+export const listLessonsBySectionAdmin = asyncHandler(async (req, res) => {
+  const { sectionId } = req.params;
+
+  // Validate sectionId
+  if (!mongoose.Types.ObjectId.isValid(sectionId)) {
+    throw new ApiError(400, "Invalid section id");
+  }
+
+  // Check if section exists
+  const section = await Section.findById(sectionId).lean();
+  if (!section) {
+    throw new ApiError(404, "Section not found");
+  }
+
+  // Fetch all lessons for this section
+  const lessons = await Lesson.find({ section: sectionId })
+    .sort({ order: 1 })
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    data: lessons,
+  });
+});
+
 
 export const updateLesson = asyncHandler(async (req, res) => {
   const { lessonId } = req.params;
