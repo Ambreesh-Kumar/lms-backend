@@ -5,6 +5,7 @@ import {
   createRefreshToken,
   verifyRefreshToken,
 } from "../utils/jwt.js";
+import asyncHandler from "../utils/AsyncHandler.js";
 
 const REFRESH_COOKIE_NAME = "refreshToken";
 const isProduction = process.env.NODE_ENV === "production";
@@ -152,3 +153,14 @@ export const logout = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const getMe = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password");
+
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
