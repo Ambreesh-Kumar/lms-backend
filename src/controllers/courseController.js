@@ -287,7 +287,9 @@ export const listPublishedCourses = asyncHandler(async (req, res) => {
       .sort({ createdAt: -1 }) // latest first
       .skip((page - 1) * limit)
       .limit(limit)
-      .select("title category price level thumbnail instructor createdAt") // select only necessary fields
+      .select(
+        "title description category price level thumbnail instructor createdAt"
+      ) // select only necessary fields
       .populate({
         path: "instructor",
         select: "name avatar",
