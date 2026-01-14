@@ -386,7 +386,6 @@ cancelled  → enrollment revoked / expired
 * MongoDB transactions for critical flows
 
 ## 🧩 Backend Architecture Overview
-
 ```text
 src/
 ├── config/
