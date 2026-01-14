@@ -469,7 +469,7 @@ src/
 │
 ├── app.js                            # Express app setup
 └── server.js                         # Server bootstrap
-
+```
 
 ## 🧪 Testing & Validation
 * All critical flows tested via **Postman**
@@ -481,13 +481,20 @@ src/
   * Dashboard accuracy
  
 ## 🛠️ Tech Stack
-* **Node.js**
-* **Express.js**
-* **MongoDB + Mongoose**
-* **JWT Authentication**
-* **Razorpay Payment Gateway**
-* **Multer + Cloudinary**
-* **REST API Architecture**
+
+* **Node.js** — Server-side JavaScript runtime for scalable backend systems
+* **Express.js** — RESTful API framework with middleware-based architecture
+* **MongoDB + Mongoose** — NoSQL database with schema validation and transactional workflows
+* **JWT Authentication** — Secure access & refresh token–based authentication
+* **Role-Based Access Control (RBAC)** — Admin, Instructor, and Student authorization layers
+* **Razorpay Payment Gateway** — Secure online payments with verification and idempotency
+* **EJS (Server-Side Rendering)** — Checkout and payment status pages
+* **Multer + Cloudinary** — Media uploads with transformation and storage optimization
+* **AI Integration (Google Gemini API)** — Lesson summaries, MCQs, and Q&A generation
+* **Environment-Based Configuration** — Feature toggles, secrets, and AI cost control via `.env`
+* **Centralized Error Handling** — Consistent API error responses and logging
+* **REST API Architecture** — Modular, scalable, and production-ready design
+
 
 ## 📌 Project Status
 * Backend development **completed**
