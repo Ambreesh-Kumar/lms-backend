@@ -1,5 +1,6 @@
 import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
+import { getCache, setCache, deleteCache, deleteCacheByPattern } from "../utils/cache.js";
 import { Course } from "../models/Course.js";
 import { Section } from "../models/Section.js";
 import { Lesson } from "../models/Lesson.js";
@@ -154,6 +155,10 @@ export const updateCourse = asyncHandler(async (req, res) => {
 
   await course.save();
 
+  // --- CACHE: invalidate this course and published list cache ---
+await deleteCache(`courses:single:${courseId}`);
+await deleteCacheByPattern("courses:published:*");
+
   res.status(200).json({
     success: true,
     message: "Course updated successfully",
@@ -211,6 +216,11 @@ export const updateCourseStatus = asyncHandler(async (req, res) => {
   }
 
   await course.save();
+
+
+// --- CACHE: invalidate affected caches when status changes ---
+await deleteCache(`courses:single:${courseId}`);
+await deleteCacheByPattern("courses:published:*");
 
   res.status(200).json({
     success: true,
@@ -280,6 +290,19 @@ export const listPublishedCourses = asyncHandler(async (req, res) => {
   if (type === "free") filter.price = 0;
   if (type === "paid") filter.price = { $gt: 0 };
 
+   // --- CACHE: build a unique key from all query params ---
+  const cacheKey = `courses:published:page=${page}:limit=${limit}:category=${category || ""}:search=${search || ""}:type=${type || ""}`;
+
+   // --- CACHE: check Redis before hitting MongoDB ---
+  const cached = await getCache(cacheKey);
+  if (cached) {
+    return res.status(200).json({
+      success: true,
+      data: cached.courses,
+      meta: cached.meta,
+    });
+  }
+
   // Execute queries in parallel for efficiency
   const [total, courses] = await Promise.all([
     Course.countDocuments(filter),
@@ -296,6 +319,10 @@ export const listPublishedCourses = asyncHandler(async (req, res) => {
       })
       .lean(),
   ]);
+
+   // --- CACHE: store result in Redis for next request ---
+  await setCache(cacheKey, { courses, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } });
+
 
   res.status(200).json({
     success: true,
@@ -315,6 +342,18 @@ export const getSingleCourse = asyncHandler(async (req, res) => {
 
   if (!mongoose.Types.ObjectId.isValid(courseId)) {
     throw new ApiError(400, "Invalid course id");
+  }
+
+    // --- CACHE: build key from courseId ---
+  const cacheKey = `courses:single:${courseId}`;
+
+    // --- CACHE: check Redis before hitting MongoDB ---
+  const cached = await getCache(cacheKey);
+  if (cached) {
+    return res.status(200).json({
+      success: true,
+      data: cached,
+    });
   }
 
   const course = await Course.findById(courseId)
@@ -340,6 +379,11 @@ export const getSingleCourse = asyncHandler(async (req, res) => {
     if (!isAdmin && !isOwner) {
       throw new ApiError(403, "You are not allowed to access this course");
     }
+  }
+
+    // --- CACHE: only cache published courses, not draft/unpublished ---
+  if (course.status === "published") {
+    await setCache(cacheKey, course);
   }
 
   res.status(200).json({
@@ -391,6 +435,10 @@ export const deleteCourse = asyncHandler(async (req, res) => {
   }
 
   await course.deleteOne();
+
+  // --- CACHE: remove this course from cache ---
+await deleteCache(`courses:single:${courseId}`);
+await deleteCacheByPattern("courses:published:*");
 
   res.status(200).json({
     success: true,

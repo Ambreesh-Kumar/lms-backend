@@ -9,6 +9,8 @@ services:
     depends_on:
       - redis
     restart: unless-stopped
+    networks:
+      - lms-network
 
   redis:
     image: redis:7-alpine
@@ -16,3 +18,13 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - lms-network
+
+networks:
+  lms-network:
+
+volumes:
+  redis-data:
