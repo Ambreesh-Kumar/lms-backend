@@ -552,9 +552,8 @@ lms-backend/
 
 ## 👤 Developer
 **Ambreesh Kumar**  
-Backend Developer | **Node.js** | **Express.js** | **MongoDB** | **REST APIs**  
-Focused on building **scalable, real-world backend systems**  
-
+Backend Developer | **Node.js** | **Express.js** | **MongoDB** | **REST APIs** | **Docker** | **Redis** | **Nginx** | **AWS EC2** | **CI/CD**  
+Focused on building **scalable, real-world backend systems with DevOps-driven deployments**  
 - **GitHub**: https://github.com/Ambreesh-Kumar 
 - **LinkedIn**: [https://www.linkedin.com/in/ambreesh-kumar](https://www.linkedin.com/in/ambreesh-kumar?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
 - **Email**: kambreesh0@gmail.com
