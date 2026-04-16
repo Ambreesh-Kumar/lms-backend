@@ -1,5 +1,5 @@
 # 🎓 AI-Powered Learning Management System (LMS) – Backend API
-A **production-grade, AI-integrated Learning Management System backend** built with **Node.js, Express, and MongoDB**, architected to power **real-world EdTech platforms**.  
+A **production-grade, AI-integrated Learning Management System backend** built with **Node.js, Express, and MongoDB**, architected to power **real-world EdTech platforms**, with DevOps-enabled deployment using **Docker, Redis, Nginx, AWS EC2, and CI/CD (in devops-setup branch)**.   
 This system delivers a complete LMS experience — from **role-based course creation and enrollment** to **secure Razorpay payments** and **advanced AI-driven learning assistance**, including:
 * 🧠 **AI-generated** lesson summaries
 * 📝 **AI-powered** intelligent assessments (MCQs)
@@ -8,8 +8,13 @@ This system delivers a complete LMS experience — from **role-based course crea
 * 📊 Student progress tracking & learning analytics
 
 ## API Base URL  
+**Render Deployment:**
 ```
 https://lms-backend-rmh5.onrender.com
+```
+**AWS EC2 Deployment (Docker + Nginx Reverse Proxy):**
+```
+https://lms-aws.zapto.org
 ```
 
 ## Why This Project?
@@ -21,6 +26,7 @@ Key engineering challenges addressed in this project include:
 - 🔐 **Role-based access control (RBAC)** across Admin, Instructor, and Student workflows
 - 🗂️ **Complex relational data modeling** using MongoDB for courses, lessons, enrollments, payments, and progress
 - ⚙️ **Scalable, maintainable architecture** with clean separation of routes, controllers, services, and utilities
+- 🚀 **DevOps-driven deployment architecture** using Docker, Redis caching, Nginx (rate limiting & load balancing), AWS EC2, and CI/CD pipelines (implemented in devops-setup branch)
 - 🛡️ **Production-ready security practices**, including token-based authentication and protected resources
 
 ## 🚀 Key Highlights
@@ -35,6 +41,7 @@ Key engineering challenges addressed in this project include:
 * **Centralized error handling with consistent API responses**
 * **MongoDB transactions for critical operations**
 * **Scalable, modular architecture following industry best practices**
+* **DevOps-enabled infrastructure** with Docker containerization, Redis caching, Nginx reverse proxy (rate limiting & load balancing), AWS EC2 deployment, and CI/CD pipelines *(available in devops-setup branch)*
 
 ## 🧩 Platform Capabilities Overview
 
@@ -49,10 +56,23 @@ This LMS backend is designed as a **real-world, monetizable learning platform**,
 * 🧠 **Content-aware AI features** that respect lesson boundaries
 * 🔐 **Secure authentication & authorization** using JWT (access + refresh)
 * 🗂️ **Scalable modular architecture** built for growth
+* ⚙️ **DevOps-ready infrastructure** with containerization, caching, reverse proxy, and automated deployments *(devops-setup branch)*
 * 🧾 **Production-grade data integrity** using transactions and idempotency
 * ☁️ **Cloud-native media handling** via Cloudinary
 
 This architecture reflects **how modern EdTech platforms are built and operated in production**.
+
+## ⚙️ DevOps & Deployment Architecture (devops-setup branch)
+
+This project includes a dedicated **`devops-setup` branch** showcasing production-grade deployment and infrastructure practices:
+
+- 🐳 **Docker & Docker Compose** — Containerized Node.js, Redis, and Nginx services
+- ⚡ **Redis Caching** — Cache-aside strategy for high-frequency APIs
+- 🌐 **Nginx Reverse Proxy** — Request routing, rate limiting, and load balancing
+- ☁️ **AWS EC2 Deployment** — Linux-based production environment with HTTPS setup
+- 🔁 **CI/CD Pipelines (GitHub Actions)** — Automated build and deployment workflows
+
+> ⚠️ The `main` branch contains core backend implementation, while `devops-setup` demonstrates infrastructure and deployment configuration.
 
 ## 🤖 AI-Powered Learning Intelligence (Production-Ready)
 
@@ -470,6 +490,34 @@ src/
 └── server.js                         # Server bootstrap
 ```
 
+## ⚙️ DevOps Folder Structure (devops-setup branch)
+
+The `devops-setup` branch includes infrastructure and deployment configuration for running the LMS in a production-like environment:
+
+```text
+lms-backend/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml              # CI/CD pipeline (GitHub Actions)
+│
+├── nginx/
+│   ├── nginx.conf                  # Local development config (HTTP)
+│   └── nginx.prod.conf             # Production config (HTTPS, SSL)
+│
+├── src/
+│   ├── config/
+│   │   └── redis.js                # Redis connection (env-aware)
+│   ├── utils/
+│   │   └── cache.js                # Cache helpers (cache-aside pattern)
+│   ├── controllers/
+│   │   └── courseController.js     # Redis caching integration (TTL-based)
+│   └── server.js                   # Application entry point
+│
+├── Dockerfile                      # Node.js container setup
+├── docker-compose.yml              # Multi-service setup (app + Redis + Nginx)
+├── .dockerignore                   # Ignore unnecessary files in build
+└── .env                            # Environment variables (managed securely)
+
 ## 🧪 Testing & Validation
 * All critical flows tested via **Postman**
 * Covered scenarios:
@@ -493,6 +541,7 @@ src/
 * **Environment-Based Configuration** — Feature toggles, secrets, and AI cost control via `.env`
 * **Centralized Error Handling** — Consistent API error responses and logging
 * **REST API Architecture** — Modular, scalable, and production-ready design
+* **DevOps & Infrastructure** — Docker, Redis, Nginx, AWS EC2, CI/CD (GitHub Actions)
 
 
 ## 📌 Project Status
