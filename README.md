@@ -62,6 +62,24 @@ This LMS backend is designed as a **real-world, monetizable learning platform**,
 
 This architecture reflects **how modern EdTech platforms are built and operated in production**.
 
+## 🏗️ System Architecture
+
+```text
+Client (Frontend / Postman)
+        ↓
+   Nginx (Reverse Proxy, Rate Limiting)
+        ↓
+   Node.js (Express API Layer)
+        ↓
+   Redis (Caching Layer)
+        ↓
+   MongoDB (Database)
+
+External Services:
+- Razorpay (Payments)
+- Gemini AI (AI Features)
+- Cloudinary (Media Storage)
+
 ## ⚙️ DevOps & Deployment Architecture (devops-setup branch)
 
 This project includes a dedicated **`devops-setup` branch** showcasing production-grade deployment and infrastructure practices:
