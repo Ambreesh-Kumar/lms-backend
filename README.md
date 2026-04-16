@@ -79,6 +79,7 @@ External Services:
 - Razorpay (Payments)
 - Gemini AI (AI Features)
 - Cloudinary (Media Storage)
+```
 
 ## ⚙️ DevOps & Deployment Architecture (devops-setup branch)
 
