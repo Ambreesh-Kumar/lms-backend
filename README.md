@@ -517,7 +517,7 @@ lms-backend/
 ├── docker-compose.yml              # Multi-service setup (app + Redis + Nginx)
 ├── .dockerignore                   # Ignore unnecessary files in build
 └── .env                            # Environment variables (managed securely)
-
+```
 ## 🧪 Testing & Validation
 * All critical flows tested via **Postman**
 * Covered scenarios:
